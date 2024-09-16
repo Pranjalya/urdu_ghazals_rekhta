@@ -32,10 +32,10 @@ def scrape_poems_list(poets_file, poems_list_file):
     with open(poets_file) as f:
         poets = json.load(f)
 
-    poems_list = []
+    poems_list = {}
     for poet in tqdm(poets):
         details = get_links(poet["href"])
-        poems_list.append({"href": poet["href"], **details})
+        poems_list[poet["href"]] = details
 
     with open(poems_list_file, "w") as f:
         json.dump(poems_list, f, ensure_ascii=False, indent=2)
