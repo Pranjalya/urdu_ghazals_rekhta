@@ -1,3 +1,5 @@
 aiohttp
 beautifulsoup4
 tqdm
+aiolimiter
+aiofiles
