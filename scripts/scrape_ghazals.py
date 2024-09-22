@@ -76,7 +76,8 @@ async def fetch_ghazals_for_poet(
             ghazal = await get_ghazal(
                 session, ghazal_url, lang=lang, romanized=romanized
             )
-            ghazal_langs[lang] = ghazal
+            if is not None:
+                ghazal_langs[lang] = ghazal
 
         ghazals_dump[poet][ghazal_url] = ghazal_langs
 
