@@ -42,14 +42,17 @@ async def get_links(session, poet_url, dump_file, dump):
 
 
 async def process_batch(batch, session, dump_file, dump):
-    tasks = [asyncio.create_task(get_links(session, poet['href'], dump_file, dump)) for poet in batch]
+    tasks = [
+        asyncio.create_task(get_links(session, poet["href"], dump_file, dump))
+        for poet in batch
+    ]
     await asyncio.gather(*tasks)
 
 
 async def scrape_poems_list(poets_file, dump_file):
     with open(poets_file) as f:
         poets = json.load(f)
-    
+
     if os.path.exists(dump_file):
         with open(dump_file) as f:
             dump = json.load(f)
@@ -58,7 +61,7 @@ async def scrape_poems_list(poets_file, dump_file):
 
     async with aiohttp.ClientSession() as session:
         for i in tqdm(range(0, len(poets), BATCH_SIZE), desc="Processing batches"):
-            batch = poets[i:i+BATCH_SIZE]
+            batch = poets[i : i + BATCH_SIZE]
             await process_batch(batch, session, dump_file, dump)
 
 

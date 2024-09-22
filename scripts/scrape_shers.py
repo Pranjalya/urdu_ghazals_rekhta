@@ -1,10 +1,11 @@
+import os
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 import json
 
-IN_FILE = "data/rekhta_top_poets_list.json"
-OUT_FILE = "data/rekhta_poets_shers.json"
+IN_FILE = "data/rekhta_all_poets_list.json"
+OUT_FILE = "data/rekhta_all_poets_shers.json"
 
 
 def scrape_lines(poem_div):
@@ -60,9 +61,15 @@ def scrape_shers(poets_list_file, shers_dump_file):
     with open(poets_list_file) as f:
         poets = json.load(f)
 
-    sher_dump = {}
+    if os.path.exists(shers_dump_file):
+        with open(shers_dump_file) as f:
+            sher_dump = json.load(f)
+    else:
+        sher_dump = {}
 
     for poet in tqdm(poets):
+        if poet["href"] in sher_dump:
+            continue
         poet_shers = {}
         for lang in tqdm(["en-rm", "en", "hi", "ur"]):
             romanized = "rm" in lang

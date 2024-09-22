@@ -8,8 +8,8 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 from aiohttp import ClientError
 
-IN_FILE = "data/rekhta_top_poets_poems_list.json"
-OUT_FILE = "data/rekhta_top_poets_ghazals.json"
+IN_FILE = "data/rekhta_all_poets_poems_list.json"
+OUT_FILE = "data/rekhta_all_poets_ghazals.json"
 
 
 def scrape_lines(poem_div):
@@ -124,8 +124,8 @@ async def scrape_ghazals_async(poets_list_file, ghazals_dump_file):
 
     total_ghazals = sum(len(poets[poet]["ghazals"]) for poet in poets)
 
-    # 30 requests per second
-    limiter = AsyncLimiter(30, 1)
+    # 300 requests per second
+    limiter = AsyncLimiter(300, 1)
 
     async with aiohttp.ClientSession(
         timeout=aiohttp.ClientTimeout(total=30)

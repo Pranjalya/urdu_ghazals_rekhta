@@ -2,11 +2,12 @@ import os
 import json
 import asyncio
 import aiohttp
+import random
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-IN_FILE = "data/rekhta_top_poets_poems_list.json"
-OUT_FILE = "data/rekhta_top_poets_ghazals.json"
+IN_FILE = "data/rekhta_all_poets_poems_list.json"
+OUT_FILE = "data/rekhta_all_poets_ghazals.json"
 
 
 def scrape_lines(poem_div):
@@ -28,6 +29,12 @@ async def get_ghazal(session, ghazal_url, lang="hi", romanized=False):
         soup = BeautifulSoup(text, "html.parser")
 
         ghazal_section = soup.find("div", {"class": "mainPageWrap NewPoem"})
+        if ghazal_section is None:
+            ghazal_section = soup.find("div", {"class": "rfGhazal"})
+
+        if ghazal_section is None:
+            print(ghazal_url, lang, romanized)
+        return None
 
         if lang != "en":
             poem_divs = ghazal_section.find("div", {"class": "pMC", "data-roman": "on"})
@@ -79,9 +86,10 @@ async def fetch_ghazals_for_poet(
         overall_progress.update(1)
 
 
-async def scrape_ghazals_async(poets_list_file, ghazals_dump_file):
-    with open(poets_list_file) as f:
-        poets = json.load(f)
+async def scrape_ghazals_async(poets_list_file, ghazals_dump_file, poets=None):
+    if not poets:
+        with open(poets_list_file) as f:
+            poets = json.load(f)
 
     ghazals_dump = {}
     if os.path.exists(ghazals_dump_file):
@@ -108,7 +116,23 @@ async def scrape_ghazals_async(poets_list_file, ghazals_dump_file):
 
 
 async def main():
-    await scrape_ghazals_async(IN_FILE, OUT_FILE)
+    poets_batch_size = 150
+
+    if poets_batch_size:
+        with open(IN_FILE) as f:
+            poets = json.load(f)
+
+        poets_keys = list(poets.keys())
+        random.shuffle(poets_keys)
+
+        for indices in tqdm(range(0, len(poets_keys), poets_batch_size)):
+            poet_urls = {
+                poets_keys[i]: poets[poets_keys[i]]
+                for i in range(indices, indices + poets_batch_size)
+            }
+            await scrape_ghazals_async(IN_FILE, OUT_FILE, poets=poet_urls)
+    else:
+        await scrape_ghazals_async(IN_FILE, OUT_FILE)
 
 
 if __name__ == "__main__":

@@ -5,8 +5,8 @@ import aiohttp
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-IN_FILE = "data/rekhta_top_poets_poems_list.json"
-OUT_FILE = "data/rekhta_poets_nazms.json"
+IN_FILE = "data/rekhta_all_poets_poems_list.json"
+OUT_FILE = "data/rekhta_all_poets_nazms.json"
 
 
 def scrape_lines(poem_div):
