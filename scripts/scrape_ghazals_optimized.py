@@ -85,12 +85,19 @@ async def fetch_ghazals_for_poet(
     async with limiter:
         for ghazal_url in ghazals:
             if ghazal_url in ghazals_dump[poet]:
-                overall_progress.update(1)
-                continue
+                check = True
+                for lang in ["en-rm", "en", "hi", "ur"]:
+                    if ghazals_dump[poet][ghazal_url].get(lang) is None:
+                        check = False
+                if check:
+                    overall_progress.update(1)
+                    continue
 
             ghazal_langs = {}
             try:
                 for lang in ["en-rm", "en", "hi", "ur"]:
+                    if ghazals_dump[poet].get(ghazal_url, {}).get(lang) is not None:
+                        continue
                     romanized = "rm" in lang
                     ghazal = await get_ghazal(
                         session, ghazal_url, lang=lang, romanized=romanized
@@ -105,7 +112,7 @@ async def fetch_ghazals_for_poet(
             if ghazal_langs:
                 ghazals_dump[poet][ghazal_url] = ghazal_langs
 
-                async with aiofiles.open(ghazals_dump_file, "w") as f:
+                async with aiofiles.open(ghazals_dump_file, "w", encoding="utf-8") as f:
                     await f.write(
                         json.dumps(ghazals_dump, ensure_ascii=False, indent=2)
                     )
@@ -114,12 +121,12 @@ async def fetch_ghazals_for_poet(
 
 
 async def scrape_ghazals_async(poets_list_file, ghazals_dump_file):
-    async with aiofiles.open(poets_list_file, "r") as f:
+    async with aiofiles.open(poets_list_file, "r", encoding="utf-8") as f:
         poets = json.loads(await f.read())
 
     ghazals_dump = {}
     if os.path.exists(ghazals_dump_file):
-        async with aiofiles.open(ghazals_dump_file, "r") as f:
+        async with aiofiles.open(ghazals_dump_file, "r", encoding="utf-8") as f:
             ghazals_dump = json.loads(await f.read())
 
     total_ghazals = sum(len(poets[poet]["ghazals"]) for poet in poets)
